@@ -1,155 +1,266 @@
-import { ellipsify } from '@wallet-ui/react'
+"use client";
+
+import { PublicKey } from "@solana/web3.js";
+import { ellipsify } from "../ui/ui-layout";
+import { ExplorerLink } from "../cluster/cluster-ui";
 import {
-  useCertfrontAccountsQuery,
-  useCertfrontCloseMutation,
-  useCertfrontDecrementMutation,
-  useCertfrontIncrementMutation,
-  useCertfrontInitializeMutation,
   useCertfrontProgram,
-  useCertfrontProgramId,
-  useCertfrontSetMutation,
-} from './certfront-data-access'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ExplorerLink } from '../cluster/cluster-ui'
-import { CertfrontAccount } from '@project/anchor'
-import { ReactNode } from 'react'
+  useCertfrontProgramAccount,
+} from "./certfront-data-access";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
-export function CertfrontProgramExplorerLink() {
-  const programId = useCertfrontProgramId()
+// CREAR CERTIFICADO
+export function CertfrontCreate() {
+  const { createEntry } = useCertfrontProgram();
+  const { publicKey } = useWallet();
 
-  return <ExplorerLink address={programId.toString()} label={ellipsify(programId.toString())} />
-}
+  const [studentName, setStudentName] = useState("");
+  const [courseName, setCourseName] = useState("");
+  const [date, setDate] = useState("");
+  const [issuingCompany, setIssuingCompany] = useState("");
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
 
-export function CertfrontList() {
-  const certfrontAccountsQuery = useCertfrontAccountsQuery()
+  const isFormValid =
+    studentName.trim() !== "" &&
+    courseName.trim() !== "" &&
+    date.trim() !== "" &&
+    issuingCompany.trim() !== "";
+    pdfFile !== null;
+  
+  
+  const handleSubmit = async () => {
+    if (!publicKey || !isFormValid) return;
 
-  if (certfrontAccountsQuery.isLoading) {
-    return <span className="loading loading-spinner loading-lg"></span>
-  }
+    // Construir formData para el backend
+    const formData = new FormData();
+    formData.append("studentName", studentName);
+    formData.append("courseName", courseName);
+    formData.append("date", date);
+    formData.append("issuingCompany", issuingCompany)
+    formData.append("file", pdfFile as File);
 
-  if (!certfrontAccountsQuery.data?.length) {
-    return (
-      <div className="text-center">
-        <h2 className={'text-2xl'}>No accounts</h2>
-        No accounts found. Initialize one to get started.
-      </div>
-    )
-  }
+    let certId = "";
+    try {
+      const response = await fetch("/api/certificates", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Error al subir el certificado");
+
+      const data = await response.json();
+      certId = data.certId;
+
+      // Aquí invocas el contrato si todo salió bien
+      await createEntry.mutateAsync({
+        certId,
+        studentName,
+        courseName,
+        issuingCompany,
+        date,
+        owner: publicKey,
+      });
+
+      toast.success("Certificado registrado en blockchain");
+      // Limpia el formulario
+      setStudentName("");
+      setCourseName("");
+      setDate("");
+      setIssuingCompany("");
+      setPdfFile(null);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Error al procesar el certificado: " + err.message);
+    }
+  };  
+  
+
+  if (!publicKey) return <p>Conecta tu billetera</p>;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-4">
-      {certfrontAccountsQuery.data?.map((certfront) => (
-        <CertfrontCard key={certfront.address} certfront={certfront} />
-      ))}
+    <div className="space-y-2">
+      <input
+        type="text"
+        placeholder="Estudiante"
+        value={studentName}
+        onChange={(e) => setStudentName(e.target.value)}
+        className="input input-bordered w-full max-w-xs"
+      />
+      <input
+        type="text"
+        placeholder="Curso"
+        value={courseName}
+        onChange={(e) => setCourseName(e.target.value)}
+        className="input input-bordered w-full max-w-xs"
+      />
+      <input
+        type="text"
+        placeholder="Fecha"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        className="input input-bordered w-full max-w-xs"
+      />
+      <input
+        type="text"
+        placeholder="Empresa emisora"
+        value={issuingCompany}
+        onChange={(e) => setIssuingCompany(e.target.value)}
+        className="input input-bordered w-full max-w-xs"
+      />
+      <input
+        type="file"
+        accept=".pdf"
+        onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+        className="file-input file-input-bordered w-full max-w-xs"
+      />
+      <button
+        className="btn btn-primary"
+        onClick={handleSubmit}
+        disabled={createEntry.isPending || !isFormValid}
+      >
+        Crear Certificado {createEntry.isPending && "..."}
+      </button>
     </div>
-  )
+  );
 }
 
-export function CertfrontProgramGuard({ children }: { children: ReactNode }) {
-  const programAccountQuery = useCertfrontProgram()
+// LISTAR CERTIFICADOS
+export function CertfrontList() {
+  const { accounts, getProgramAccount } = useCertfrontProgram();
 
-  if (programAccountQuery.isLoading) {
-    return <span className="loading loading-spinner loading-lg"></span>
-  }
+  if (getProgramAccount.isLoading)
+    return <span className="loading loading-spinner loading-lg"></span>;
 
-  if (!programAccountQuery.data?.value) {
+  if (!getProgramAccount.data?.value)
     return (
-      <div className="alert alert-info flex justify-center">
-        <span>Program account not found. Make sure you have deployed the program and are on the correct cluster.</span>
+      <div className="flex justify-center alert alert-info">
+        <span>
+        Asegúrate de haber desplegado el programa y estar en la red correcta.
+          </span>
       </div>
-    )
-  }
+    );
 
-  return children
-}
-
-function CertfrontCard({ certfront }: { certfront: CertfrontAccount }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Certfront: {certfront.data.count}</CardTitle>
-        <CardDescription>
-          Account: <ExplorerLink address={certfront.address} label={ellipsify(certfront.address)} />
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-4 justify-evenly">
-          <CertfrontButtonIncrement certfront={certfront} />
-          <CertfrontButtonSet certfront={certfront} />
-          <CertfrontButtonDecrement certfront={certfront} />
-          <CertfrontButtonClose certfront={certfront} />
+    <div className={"space-y-6"}>
+      {accounts.isLoading ? (
+        <span className="loading loading-spinner loading-lg"></span>
+      ) : accounts.data?.length ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {accounts.data?.map((account) => (
+            <CertfrontCard
+              key={account.publicKey.toString()}
+              account={account.publicKey}
+            />
+          ))}
         </div>
-      </CardContent>
-    </Card>
-  )
+      ) : (
+        <div className="text-center">
+          <h2 className={"text-2xl"}>No hay cuentas registradas</h2>
+          No hay cuentas registradas, crea una para comenzar.
+        </div>
+      )}
+    </div>
+  );
 }
 
-export function CertfrontButtonInitialize() {
-  const mutationInitialize = useCertfrontInitializeMutation()
+// TARJETA INDIVIDUAL DE CERTIFICADO
+function CertfrontCard({ account }: { account: PublicKey }) {
+  const { accountQuery, updateEntry, deleteEntry } = useCertfrontProgramAccount({ account });
+  const { publicKey } = useWallet();
 
-  return (
-    <Button onClick={() => mutationInitialize.mutateAsync()} disabled={mutationInitialize.isPending}>
-      Initialize Certfront {mutationInitialize.isPending && '...'}
-    </Button>
-  )
-}
+  const [studentName, setStudentName] = useState("");
+  const [courseName, setCourseName] = useState("");
+  const [date, setDate] = useState("");
+  const [issuingCompany, setIssuingCompany] = useState("");
 
-export function CertfrontButtonIncrement({ certfront }: { certfront: CertfrontAccount }) {
-  const incrementMutation = useCertfrontIncrementMutation({ certfront })
+  const isFormValid =
+  studentName.trim() !== "" &&
+  courseName.trim() !== "" &&
+  date.trim() !== "" &&
+  issuingCompany.trim() !== "";
 
-  return (
-    <Button variant="outline" onClick={() => incrementMutation.mutateAsync()} disabled={incrementMutation.isPending}>
-      Increment
-    </Button>
-  )
-}
+  const handleUpdate = () => {
+    if (publicKey && isFormValid) {
+      updateEntry.mutateAsync({
+        studentName,
+        courseName,
+        date,
+        issuingCompany,
+        owner: publicKey,
+      });
+    }
+  };
 
-export function CertfrontButtonSet({ certfront }: { certfront: CertfrontAccount }) {
-  const setMutation = useCertfrontSetMutation({ certfront })
+  const handleDelete = () => {
+    const originalStudent = accountQuery.data?.studentName;
+    if (
+      originalStudent &&
+      window.confirm("¿Estás seguro de eliminar este certificado?")
+    ) {
+      deleteEntry.mutateAsync(originalStudent);
+    }
+  };
 
-  return (
-    <Button
-      variant="outline"
-      onClick={() => {
-        const value = window.prompt('Set value to:', certfront.data.count.toString() ?? '0')
-        if (!value || parseInt(value) === certfront.data.count || isNaN(parseInt(value))) {
-          return
-        }
-        return setMutation.mutateAsync(parseInt(value))
-      }}
-      disabled={setMutation.isPending}
-    >
-      Set
-    </Button>
-  )
-}
+  if (!publicKey) return <p>Conecta tu billetera</p>;
 
-export function CertfrontButtonDecrement({ certfront }: { certfront: CertfrontAccount }) {
-  const decrementMutation = useCertfrontDecrementMutation({ certfront })
+  return accountQuery.isLoading ? (
+    <span className="loading loading-spinner loading-lg" />
+  ) : (
+    <div className="card card-bordered border-4 border-base-300 text-neutral-content">
+      <div className="card-body text-center">
+        <h2 className="card-title">{accountQuery.data?.studentName}</h2>
+        <p>Curso: {accountQuery.data?.courseName}</p>
+        <p>Fecha: {accountQuery.data?.date}</p>
+        <p>Empresa: {accountQuery.data?.issuingCompany}</p>
 
-  return (
-    <Button variant="outline" onClick={() => decrementMutation.mutateAsync()} disabled={decrementMutation.isPending}>
-      Decrement
-    </Button>
-  )
-}
-
-export function CertfrontButtonClose({ certfront }: { certfront: CertfrontAccount }) {
-  const closeMutation = useCertfrontCloseMutation({ certfront })
-
-  return (
-    <Button
-      variant="destructive"
-      onClick={() => {
-        if (!window.confirm('Are you sure you want to close this account?')) {
-          return
-        }
-        return closeMutation.mutateAsync()
-      }}
-      disabled={closeMutation.isPending}
-    >
-      Close
-    </Button>
-  )
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="Nuevo nombre"
+            value={studentName}
+            onChange={(e) => setStudentName(e.target.value)}
+            className="input input-bordered w-full max-w-xs"
+          />
+          <input
+            type="text"
+            placeholder="Nuevo curso"
+            value={courseName}
+            onChange={(e) => setCourseName(e.target.value)}
+            className="input input-bordered w-full max-w-xs"
+          />
+          <input
+            type="text"
+            placeholder="Nueva fecha"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="input input-bordered w-full max-w-xs"
+          />
+          <input
+            type="text"
+            placeholder="Nueva empresa emisora"
+            value={issuingCompany}
+            onChange={(e) => setIssuingCompany(e.target.value)}
+            className="input input-bordered w-full max-w-xs"
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleUpdate}
+            disabled={updateEntry.isPending || !isFormValid}
+          >
+            Actualizar {updateEntry.isPending && "..."}
+          </button>
+          <button
+            className="btn btn-secondary btn-outline"
+            onClick={handleDelete}
+            disabled={deleteEntry.isPending}
+          >
+            Eliminar
+          </button>
+          <ExplorerLink path={`account/${account}`} label={ellipsify(account.toString())} />
+        </div>
+      </div>
+    </div>
+  );
 }
