@@ -30,7 +30,7 @@ export function useGetSignatures({ address }: { address: PublicKey }) {
   return useQuery({
     queryKey: ['get-signatures', { endpoint: connection.rpcEndpoint, address }],
     //queryFn: () => connection.getSignaturesForAddress(address).send(),
-    queryFn: () => connection.rpc.getSignaturesForAddress(address),
+    queryFn: () => connection.getSignaturesForAddress(address),
   });
 }
 
