@@ -93,9 +93,20 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
 
   const updateCertificate = useMutation<string, Error, CertificateArgs>({
     mutationKey: ["certificate", "update", { cluster }],
-    mutationFn: async ({ studentName, courseName, date, issuingCompany }) => {
+    mutationFn: async ({ studentName, courseName, date, issuingCompany, owner }) => {
+    if (!certId || !owner) throw new Error("Faltan certId u owner");
+
+    const [certificatePDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from(certId), owner.toBuffer()],
+      program.programId
+    );
       return program.methods
         .updateCertificate(studentName, courseName, date, issuingCompany)
+        .accounts({
+          certificate: certificatePDA,
+          owner,
+          systemProgram: PublicKey.default,
+        })
         .rpc();
     },
     onSuccess: (signature) => {
@@ -107,10 +118,25 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
     },
   });
 
-  const deleteCertificate = useMutation({
+  const deleteCertificate = useMutation<string, Error, string>({
     mutationKey: ["certificate", "delete", { cluster, account }],
-    mutationFn: (studentName: string) =>
-      program.methods.deleteCertificate(studentName).rpc(),
+    mutationFn: async (certId) => {
+      if (!PublicKey) throw new Error("Wallet no conectada");
+  
+      const [certificatePDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from(certId), PublicKey.toBuffer()],
+        program.programId
+      );
+  
+      return program.methods
+        .deleteCertificate(certId)
+        .accounts({
+          certificate: certificatePDA,
+          owner: publicKey,
+          systemProgram: PublicKey.default,
+        })
+        .rpc();
+    },
     onSuccess: (tx) => {
       transactionToast(tx);
       return accounts.refetch();
