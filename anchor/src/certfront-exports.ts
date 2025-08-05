@@ -1,34 +1,30 @@
 // Here we export some useful types and functions for interacting with the Anchor program.
-import { Account, address, getBase58Decoder, SolanaClient } from 'gill'
-import { SolanaClusterId } from '@wallet-ui/react'
-import { getProgramAccountsDecoded } from './helpers/get-program-accounts-decoded'
-import { Certfront, CERTFRONT_DISCRIMINATOR, CERTFRONT_PROGRAM_ADDRESS, getCertfrontDecoder } from './client/js'
-import CertfrontIDL from '../target/idl/certfront.json'
-
-export type CertfrontAccount = Account<Certfront, string>
+import { AnchorProvider, Program, Idl } from "@coral-xyz/anchor";
+import * as anchor from "@coral-xyz/anchor";
+import { Cluster, PublicKey } from "@solana/web3.js";
+import * as CertificatesIDL from "anchor/target/idl/certificates.json";
+import type { Certificates } from "../target/types/certificates";
 
 // Re-export the generated IDL and type
-export { CertfrontIDL }
+export { Certificates, CertificatesIDL };
 
-// This is a helper function to get the program ID for the Certfront program depending on the cluster.
-export function getCertfrontProgramId(cluster: SolanaClusterId) {
-  switch (cluster) {
-    case 'solana:devnet':
-    case 'solana:testnet':
-      // This is the program ID for the Certfront program on devnet and testnet.
-      return address('6z68wfurCMYkZG51s1Et9BJEd9nJGUusjHXNt4dGbNNF')
-    case 'solana:mainnet':
-    default:
-      return CERTFRONT_PROGRAM_ADDRESS
-  }
+// After updating your program ID (e.g. after running `anchor keys sync`) update the value below.
+export const CERTIFICATES_PROGRAM_ID = new PublicKey(
+  "53BEEq4ztqFLuSiHD3gatfeS5sHVZeS6hkmih1UUnNjG"
+);
+
+// This is a helper function to get the Certificates Anchor program.
+export function getCertificatesProgram(provider: AnchorProvider) {
+  return new Program(CertificatesIDL as Idl, provider);
 }
 
-export * from './client/js'
-
-export function getCertfrontProgramAccounts(rpc: SolanaClient['rpc']) {
-  return getProgramAccountsDecoded(rpc, {
-    decoder: getCertfrontDecoder(),
-    filter: getBase58Decoder().decode(CERTFRONT_DISCRIMINATOR),
-    programAddress: CERTFRONT_PROGRAM_ADDRESS,
-  })
+// This is a helper function to get the program ID for the Certificates program depending on the cluster.
+export function getCertificatesProgramId(cluster: Cluster) {
+  switch (cluster) {
+    case "devnet":
+    case "testnet":
+    case "mainnet-beta":
+    default:
+      return CERTIFICATES_PROGRAM_ID;
+  }
 }

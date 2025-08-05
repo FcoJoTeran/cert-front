@@ -1,13 +1,18 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "module": "esnext",
-    "types": ["jest", "node"],
-    "typeRoots": ["./node_modules/@types"],
-    "lib": ["es2015"],
-    "target": "esnext",
+    "module": "commonjs",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
-  }
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
 }
