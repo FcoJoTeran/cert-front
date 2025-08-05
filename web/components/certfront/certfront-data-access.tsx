@@ -34,7 +34,7 @@ export function useCertfrontProgram() {
 
   const accounts = useQuery({
     queryKey: ["certificates", "all", { cluster }],
-    queryFn: () => program.account.certificateState.all(),
+    queryFn: () => program.account.CertificateState.all(),
   });
 
   const getProgramAccount = useQuery({
