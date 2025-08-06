@@ -1,5 +1,4 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/web/.next",
-  "includeFiles": ["anchor/target/idl/certificates.json"]
+  "outputDirectory": "dist/web/.next"
 }
