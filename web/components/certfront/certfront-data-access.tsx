@@ -10,7 +10,7 @@ import { useAnchorProvider } from '../solana/solana-provider'
 import { useTransactionToast } from '../ui/ui-layout'
 import { useMemo } from 'react'
 
-interface CertificateArgs {
+export interface CertificateArgs {
   certId?: string
   studentName: string
   courseName: string
@@ -32,7 +32,7 @@ export function useCertfrontProgram() {
 
   const accounts = useQuery({
     queryKey: ['certificates', 'all', { cluster }],
-    queryFn: () => program.account.certificateState.all(),
+    queryFn: () => (program.account as any).certificateState.all(),
   })
 
   const getProgramAccount = useQuery({
@@ -85,12 +85,12 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
 
   const accountQuery = useQuery({
     queryKey: ['certificates', 'fetch', { cluster, account }],
-    queryFn: () => program.account.certificateState.fetch(account),
+    queryFn: () => (program.account as any).certificateState.fetch(account),
   })
 
   const updateCertificate = useMutation<string, Error, CertificateArgs>({
     mutationKey: ['certificate', 'update', { cluster }],
-    mutationFn: async ({ studentName, courseName, date, issuingCompany, owner }) => {
+    mutationFn: async ({ certId,studentName, courseName, date, issuingCompany, owner }) => {
       if (!certId || !owner) throw new Error('Faltan certId u owner')
 
       const [certificatePDA] = PublicKey.findProgramAddressSync(
@@ -115,13 +115,13 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
     },
   })
 
-  const deleteCertificate = useMutation<string, Error, string>({
+  const deleteCertificate = useMutation<string, Error, { certId: string; owner: PublicKey }>({
     mutationKey: ['certificate', 'delete', { cluster, account }],
-    mutationFn: async (certId) => {
-      if (!PublicKey) throw new Error('Wallet no conectada')
+    mutationFn: async ({ certId, owner }) => {
+      if (!certId || !owner) throw new Error('Wallet no conectada')
 
       const [certificatePDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from(certId), PublicKey.toBuffer()],
+        [Buffer.from(certId), owner.toBuffer()],
         program.programId,
       )
 
@@ -129,7 +129,7 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
         .deleteCertificate(certId)
         .accounts({
           certificate: certificatePDA,
-          owner: publicKey,
+          owner,
           systemProgram: PublicKey.default,
         })
         .rpc()

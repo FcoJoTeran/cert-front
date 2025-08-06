@@ -148,7 +148,7 @@ export function CertfrontList() {
         <span className="loading loading-spinner loading-lg"></span>
       ) : accounts.data?.length ? (
         <div className="grid gap-4 md:grid-cols-2">
-          {accounts.data?.map((account) => (
+          {accounts.data?.map((account: { publicKey: PublicKey }) => (
             <CertfrontCard
               key={account.publicKey.toString()}
               account={account.publicKey}
@@ -184,6 +184,7 @@ function CertfrontCard({ account }: { account: PublicKey }) {
   const handleUpdate = () => {
     if (publicKey && isFormValid) {
       updateCertificate.mutateAsync({
+        certId: accountQuery.data.certId,
         studentName,
         courseName,
         date,
@@ -194,12 +195,13 @@ function CertfrontCard({ account }: { account: PublicKey }) {
   };
 
   const handleDelete = () => {
-    const originalStudent = accountQuery.data?.studentName;
+    const certId = accountQuery.data?.certId;
     if (
-      originalStudent &&
+      certId &&
+      publicKey &&
       window.confirm("¿Estás seguro de eliminar este certificado?")
     ) {
-      deleteCertificate.mutateAsync(originalStudent);
+      deleteCertificate.mutateAsync({ certId, owner: publicKey });
     }
   };
 
