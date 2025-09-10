@@ -19,6 +19,7 @@ export function CertfrontCreate() {
   const { createCertificate } = useCertfrontProgram()
   const { publicKey } = useWallet()
   const [studentName, setStudentName] = useState('')
+  const [studentLastName, setStudentLastName] = useState('')
   const [courseName, setCourseName] = useState('')
   const [date, setDate] = useState('')
   const [issuingCompany, setIssuingCompany] = useState('')
@@ -30,6 +31,7 @@ export function CertfrontCreate() {
 
   const isFormValid =
     studentName.trim() !== '' &&
+    studentLastName.trim() !== '' &&
     courseName.trim() !== '' &&
     date.trim() !== '' &&
     issuingCompany.trim() !== '' &&
@@ -45,6 +47,7 @@ export function CertfrontCreate() {
     // Construir formData para el backend
     const formData = new FormData()
     formData.append('studentName', studentName)
+    formData.append('studentLastName', studentLastName)
     formData.append('courseName', courseName)
     formData.append('date', date)
     formData.append('issuingCompany', issuingCompany)
@@ -90,6 +93,7 @@ export function CertfrontCreate() {
         certId,
         cid,
         studentName,
+        studentLastName,
         courseName: normalizedGroupName,
         issuingCompany,
         date,
@@ -103,6 +107,7 @@ export function CertfrontCreate() {
       toast.success('Certificado registrado en blockchain')
       // Limpia el formulario
       setStudentName('')
+      setStudentLastName('')
       setCourseName('')
       setDate('')
       setIssuingCompany('')
@@ -131,6 +136,20 @@ export function CertfrontCreate() {
           placeholder="Estudiante"
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
+          className="input input-bordered w-full max-w-xs"
+        />
+      </div>
+
+      <div className="form-control">
+        <label className="label" htmlFor="studentLastName">
+          <span className="label-text">Apellido del estudiante</span>
+        </label>
+        <input
+          id="studentLastName"
+          type="text"
+          placeholder="Apellido"
+          value={studentLastName}
+          onChange={(e) => setStudentLastName(e.target.value)}
           className="input input-bordered w-full max-w-xs"
         />
       </div>
@@ -306,6 +325,7 @@ function CertfrontCard({ account }: { account: PublicKey }) {
 
   // Estados de edición
   const [studentName, setStudentName] = useState('')
+  const [studentLastName, setStudentLastName] = useState('')
   const [courseName, setCourseName] = useState('')
   const [date, setDate] = useState('')
   const [issuingCompany, setIssuingCompany] = useState('')
@@ -316,6 +336,7 @@ function CertfrontCard({ account }: { account: PublicKey }) {
 
   const isFormValid =
     studentName.trim() !== '' &&
+    studentLastName.trim() !== '' &&
     courseName.trim() !== '' &&
     date.trim() !== '' &&
     issuingCompany.trim() !== '' &&
@@ -330,6 +351,7 @@ function CertfrontCard({ account }: { account: PublicKey }) {
       certId: accountQuery.data.certId,
       cid: accountQuery.data.cid,
       studentName,
+      studentLastName,
       courseName,
       issuingCompany,
       date,
@@ -355,8 +377,8 @@ function CertfrontCard({ account }: { account: PublicKey }) {
   return (
     <div className="card card-bordered border-4 border-base-300">
       <div className="card-body text-center">
-        <h2 className="card-title">{accountQuery.data?.studentName}</h2>
-        <p className="text-sm text-gray-500">{accountQuery.data?.courseName}</p>
+        <h2 className="card-title">{accountQuery.data?.courseName}</h2>
+        <p className="text-sm text-gray-500">{accountQuery.data?.studentName} {accountQuery.data?.studentLastName}</p>
         <a
           href={`https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY}/ipfs/${accountQuery.data?.cid}`}
           target="_blank"
@@ -386,7 +408,10 @@ function CertfrontCard({ account }: { account: PublicKey }) {
           <div className="modal-box">
             <h3 className="font-bold text-lg">Detalles del Certificado</h3>
             <p>
-              <strong>Estudiante:</strong> {accountQuery.data?.studentName}
+              <strong>Nombres:</strong> {accountQuery.data?.studentName}
+            </p>
+            <p>
+              <strong>Apellidos:</strong> {accountQuery.data?.studentLastName}
             </p>
             <p>
               <strong>Curso:</strong> {accountQuery.data?.courseName}
@@ -432,68 +457,138 @@ function CertfrontCard({ account }: { account: PublicKey }) {
         <dialog className="modal modal-open">
           <div className="modal-box">
             <h3 className="font-bold text-lg">Editar Certificado</h3>
-            <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="Estudiante"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                className="input input-bordered w-full"
-              />
-              <input
-                type="text"
-                placeholder="Curso"
-                value={courseName}
-                onChange={(e) => setCourseName(e.target.value)}
-                className="input input-bordered w-full"
-              />
-              <input
-                type="date"
-                placeholder="Fecha"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="input input-bordered w-full"
-              />
-              <input
-                type="text"
-                placeholder="Empresa"
-                value={issuingCompany}
-                onChange={(e) => setIssuingCompany(e.target.value)}
-                className="input input-bordered w-full"
-              />
-              <input
-                type="number"
-                placeholder="Horas"
-                value={hours}
-                onChange={(e) => setHours(parseInt(e.target.value, 10))}
-                className="input input-bordered w-full"
-              />
-              <input
-                type="text"
-                placeholder="Ciudad"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="input input-bordered w-full"
-              />
-              <input
-                type="date"
-                placeholder="Expiración"
-                value={expiration}
-                onChange={(e) => setExpiration(e.target.value)}
-                className="input input-bordered w-full"
-              />
-              <select
-                value={certType}
-                onChange={(e) => setCertType(e.target.value)}
-                className="select select-bordered w-full"
-              >
-                <option value="" disabled>
-                  Selecciona tipo
-                </option>
-                <option value="Asistencia">Asistencia</option>
-                <option value="Aprobación">Aprobación</option>
-              </select>
+            <div className="space-y-4">
+              <div className="form-control">
+                <label className="label" htmlFor="studentName">
+                  <span className="label-text">Nombres</span>
+                </label>
+                <input
+                  id="studentName"
+                  type="text"
+                  placeholder="Nombres"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="studentLastName">
+                  <span className="label-text">Apellidos</span>
+                </label>
+                <input
+                  id="studentLastName"
+                  type="text"
+                  placeholder="Apellidos"
+                  value={studentLastName}
+                  onChange={(e) => setStudentLastName(e.target.value)}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="courseName">
+                  <span className="label-text">Curso</span>
+                </label>
+                <input
+                  id="courseName"
+                  type="text"
+                  placeholder="Curso"
+                  value={courseName}
+                  onChange={(e) => setCourseName(e.target.value)}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="date">
+                  <span className="label-text">Fecha</span>
+                </label>
+                <input
+                  id="date"
+                  type="date"
+                  placeholder="Fecha"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="issuingCompany">
+                  <span className="label-text">Empresa emisora</span>
+                </label>
+                <input
+                  id="issuingCompany"
+                  type="text"
+                  placeholder="Empresa"
+                  value={issuingCompany}
+                  onChange={(e) => setIssuingCompany(e.target.value)}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="hours">
+                  <span className="label-text">Horas</span>
+                </label>
+                <input
+                  id="hours"
+                  type="number"
+                  placeholder="Horas"
+                  value={hours}
+                  onChange={(e) => setHours(parseInt(e.target.value, 10))}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="city">
+                  <span className="label-text">Ciudad</span>
+                </label>
+                <input
+                  id="city"
+                  type="text"
+                  placeholder="Ciudad"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="expiration">
+                  <span className="label-text">Fecha de expiración</span>
+                </label>
+                <input
+                  id="expiration"
+                  type="date"
+                  placeholder="Expiración"
+                  value={expiration}
+                  onChange={(e) => setExpiration(e.target.value)}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="certType">
+                  <span className="label-text">Tipo de certificado</span>
+                </label>
+                <select
+                  id="certType"
+                  value={certType}
+                  onChange={(e) => setCertType(e.target.value)}
+                  className="select select-bordered w-full"
+                >
+                  <option value="" disabled>
+                    Selecciona tipo
+                  </option>
+                  <option value="Asistencia">Asistencia</option>
+                  <option value="Aprobación">Aprobación</option>
+                </select>
+              </div>
             </div>
+
             <div className="modal-action">
               <button
                 className="btn btn-primary"

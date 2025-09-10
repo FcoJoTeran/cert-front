@@ -13,6 +13,7 @@ import { useMemo } from 'react'
 export interface CertificateArgs {
   certId?: string
   studentName: string
+  studentLastName: string
   courseName: string
   date: string
   issuingCompany: string
@@ -51,6 +52,7 @@ export function useCertfrontProgram() {
       certId,
       cid,
       studentName,
+      studentLastName,
       courseName,
       issuingCompany,
       date,
@@ -73,6 +75,7 @@ export function useCertfrontProgram() {
           certId,
           cid,
           studentName,
+          studentLastName,
           courseName,
           issuingCompany,
           date,
@@ -122,6 +125,7 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
       certId,
       cid,
       studentName,
+      studentLastName,
       courseName,
       issuingCompany,
       date,
@@ -138,7 +142,18 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
         program.programId,
       )
       return program.methods
-        .updateCertificate(cid, studentName, courseName, issuingCompany, date, hours, city, expiration, certType)
+        .updateCertificate(
+          cid, 
+          studentName, 
+          studentLastName, 
+          courseName, 
+          issuingCompany, 
+          date, 
+          hours, 
+          city, 
+          expiration, 
+          certType
+        )
         .accounts({
           certificate: certificatePDA,
           owner,
