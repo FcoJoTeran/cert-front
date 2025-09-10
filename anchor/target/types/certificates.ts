@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/certificates.json`.
  */
 export type Certificates = {
-  "address": "8WkuYWUuj7DNFLw42t91wnf1TDb3V7gUspwq9rxPdn7o",
+  "address": "8rvmDWvN6Qutm8DWFqajQVZEmU6JaHsLyqibcw7EhVWv",
   "metadata": {
     "name": "certificates",
     "version": "0.1.0",
@@ -63,6 +63,10 @@ export type Certificates = {
         },
         {
           "name": "studentName",
+          "type": "string"
+        },
+        {
+          "name": "studentLastName",
           "type": "string"
         },
         {
@@ -190,6 +194,10 @@ export type Certificates = {
           "type": "string"
         },
         {
+          "name": "studentLastName",
+          "type": "string"
+        },
+        {
           "name": "courseName",
           "type": "string"
         },
@@ -255,6 +263,10 @@ export type Certificates = {
           },
           {
             "name": "studentName",
+            "type": "string"
+          },
+          {
+            "name": "studentLastName",
             "type": "string"
           },
           {

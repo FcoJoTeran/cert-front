@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("8WkuYWUuj7DNFLw42t91wnf1TDb3V7gUspwq9rxPdn7o");
+declare_id!("8rvmDWvN6Qutm8DWFqajQVZEmU6JaHsLyqibcw7EhVWv");
 
 #[program]
 pub mod certificates {
@@ -11,6 +11,7 @@ pub mod certificates {
         cert_id: String,
         cid: String,
         student_name: String,
+        student_last_name: String,
         course_name: String,
         issuing_company: String,
         date: String,
@@ -25,6 +26,7 @@ pub mod certificates {
         cert.cert_id = cert_id;
         cert.cid = cid;
         cert.student_name = student_name;
+        cert.student_last_name = student_last_name;
         cert.course_name = course_name;
         cert.issuing_company = issuing_company;
         cert.date = date;
@@ -39,6 +41,7 @@ pub mod certificates {
         ctx: Context<UpdateCertificate>,
         cid: String,
         student_name: String,
+        student_last_name: String,
         course_name: String,
         issuing_company: String,
         date: String,
@@ -51,6 +54,7 @@ pub mod certificates {
         let cert = &mut ctx.accounts.certificate;
         cert.cid = cid;
         cert.student_name = student_name;
+        cert.student_last_name = student_last_name;
         cert.course_name = course_name;
         cert.issuing_company = issuing_company;
         cert.date = date;
@@ -76,6 +80,7 @@ pub struct CertificateState {
     pub cert_id: String,
     pub cid: String,
     pub student_name: String,
+    pub student_last_name: String,
     pub course_name: String,
     pub issuing_company: String,
     pub date: String,
@@ -97,6 +102,7 @@ pub struct CreateCertificate<'info> {
             + (4 + 100)  // cert_id
             + (4 + 100)  // cid
             + (4 + 100)  // student_name
+            + (4 + 100)  // student_last_name
             + (4 + 100)  // course_name
             + (4 + 100)  // issuing_company
             + (4 + 20)   // date
