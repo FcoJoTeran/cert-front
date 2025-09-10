@@ -6,14 +6,14 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-certfront = "53BEEq4ztqFLuSiHD3gatfeS5sHVZeS6hkmih1UUnNjG"
+certfront = "8rvmDWvN6Qutm8DWFqajQVZEmU6JaHsLyqibcw7EhVWv"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "localnet"
-wallet = "/home/fjteran/.config/solana/id.json"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "../node_modules/.bin/nx run anchor:jest"
