@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/certificates.json`.
  */
 export type Certificates = {
-  "address": "53BEEq4ztqFLuSiHD3gatfeS5sHVZeS6hkmih1UUnNjG",
+  "address": "8WkuYWUuj7DNFLw42t91wnf1TDb3V7gUspwq9rxPdn7o",
   "metadata": {
     "name": "certificates",
     "version": "0.1.0",

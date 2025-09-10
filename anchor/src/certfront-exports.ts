@@ -11,7 +11,7 @@ export {CertificatesIDL};
 
 // After updating your program ID (e.g. after running `anchor keys sync`) update the value below.
 export const CERTIFICATES_PROGRAM_ID = new PublicKey(
-  "Bgw2cgw5iAufJ2ZwMTdhSP1gTGWg74buvgtyq2NhzM6M"
+  "8WkuYWUuj7DNFLw42t91wnf1TDb3V7gUspwq9rxPdn7o"
 );
 
 // This is a helper function to get the Certificates Anchor program.
