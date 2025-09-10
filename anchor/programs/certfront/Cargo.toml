@@ -20,3 +20,4 @@ anchor-debug = []
 
 [dependencies]
 anchor-lang = "0.31.1"
+sha2 = "0.10"

@@ -1,226 +1,286 @@
 {
-    "address": "53BEEq4ztqFLuSiHD3gatfeS5sHVZeS6hkmih1UUnNjG",
-    "metadata": {
-      "name": "certificates",
-      "version": "0.1.0",
-      "spec": "0.1.0",
-      "description": "Created with Anchor"
-    },
-    "instructions": [
-      {
-        "name": "create_certificate",
-        "discriminator": [
-          238,
-          189,
-          143,
-          29,
-          100,
-          80,
-          70,
-          10
-        ],
-        "accounts": [
-          {
-            "name": "certificate",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "arg",
-                  "path": "cert_id"
-                },
-                {
-                  "kind": "account",
-                  "path": "owner"
-                }
-              ]
-            }
-          },
-          {
-            "name": "owner",
-            "writable": true,
-            "signer": true
-          },
-          {
-            "name": "system_program",
-            "address": "11111111111111111111111111111111"
+  "address": "53BEEq4ztqFLuSiHD3gatfeS5sHVZeS6hkmih1UUnNjG",
+  "metadata": {
+    "name": "certificates",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "create_certificate",
+      "discriminator": [
+        238,
+        189,
+        143,
+        29,
+        100,
+        80,
+        70,
+        10
+      ],
+      "accounts": [
+        {
+          "name": "certificate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "cert_id"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
           }
-        ],
-        "args": [
-          {
-            "name": "cert_id",
-            "type": "string"
-          },
-          {
-            "name": "student_name",
-            "type": "string"
-          },
-          {
-            "name": "course_name",
-            "type": "string"
-          },
-          {
-            "name": "issuing_company",
-            "type": "string"
-          },
-          {
-            "name": "date",
-            "type": "string"
-          }
-        ]
-      },
-      {
-        "name": "delete_certificate",
-        "discriminator": [
-          153,
-          12,
-          152,
-          31,
-          165,
-          196,
-          10,
-          95
-        ],
-        "accounts": [
-          {
-            "name": "certificate",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "arg",
-                  "path": "cert_id"
-                },
-                {
-                  "kind": "account",
-                  "path": "owner"
-                }
-              ]
-            }
-          },
-          {
-            "name": "owner",
-            "writable": true,
-            "signer": true
-          },
-          {
-            "name": "system_program",
-            "address": "11111111111111111111111111111111"
-          }
-        ],
-        "args": [
-          {
-            "name": "cert_id",
-            "type": "string"
-          }
-        ]
-      },
-      {
-        "name": "update_certificate",
-        "discriminator": [
-          235,
-          236,
-          67,
-          125,
-          170,
-          84,
-          113,
-          218
-        ],
-        "accounts": [
-          {
-            "name": "certificate",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "arg",
-                  "path": "cert_id"
-                },
-                {
-                  "kind": "account",
-                  "path": "owner"
-                }
-              ]
-            }
-          },
-          {
-            "name": "owner",
-            "writable": true,
-            "signer": true
-          },
-          {
-            "name": "system_program",
-            "address": "11111111111111111111111111111111"
-          }
-        ],
-        "args": [
-          {
-            "name": "student_name",
-            "type": "string"
-          },
-          {
-            "name": "course_name",
-            "type": "string"
-          },
-          {
-            "name": "issuing_company",
-            "type": "string"
-          },
-          {
-            "name": "date",
-            "type": "string"
-          }
-        ]
-      }
-    ],
-    "accounts": [
-      {
-        "name": "CertificateState",
-        "discriminator": [
-          51,
-          162,
-          176,
-          91,
-          206,
-          185,
-          64,
-          21
-        ]
-      }
-    ],
-    "types": [
-      {
-        "name": "CertificateState",
-        "type": {
-          "kind": "struct",
-          "fields": [
-            {
-              "name": "owner",
-              "type": "pubkey"
-            },
-            {
-              "name": "cert_id",
-              "type": "string"
-            },
-            {
-              "name": "student_name",
-              "type": "string"
-            },
-            {
-              "name": "course_name",
-              "type": "string"
-            },
-            {
-              "name": "issuing_company",
-              "type": "string"
-            },
-            {
-              "name": "date",
-              "type": "string"
-            }
-          ]
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
+      ],
+      "args": [
+        {
+          "name": "cert_id",
+          "type": "string"
+        },
+        {
+          "name": "cid",
+          "type": "string"
+        },
+        {
+          "name": "student_name",
+          "type": "string"
+        },
+        {
+          "name": "course_name",
+          "type": "string"
+        },
+        {
+          "name": "issuing_company",
+          "type": "string"
+        },
+        {
+          "name": "date",
+          "type": "string"
+        },
+        {
+          "name": "hours",
+          "type": "u32"
+        },
+        {
+          "name": "city",
+          "type": "string"
+        },
+        {
+          "name": "expiration",
+          "type": "string"
+        },
+        {
+          "name": "cert_type",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "delete_certificate",
+      "discriminator": [
+        153,
+        12,
+        152,
+        31,
+        165,
+        196,
+        10,
+        95
+      ],
+      "accounts": [
+        {
+          "name": "certificate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "cert_id"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cert_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "update_certificate",
+      "discriminator": [
+        235,
+        236,
+        67,
+        125,
+        170,
+        84,
+        113,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "certificate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "cert_id"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cid",
+          "type": "string"
+        },
+        {
+          "name": "student_name",
+          "type": "string"
+        },
+        {
+          "name": "course_name",
+          "type": "string"
+        },
+        {
+          "name": "issuing_company",
+          "type": "string"
+        },
+        {
+          "name": "date",
+          "type": "string"
+        },
+        {
+          "name": "hours",
+          "type": "u32"
+        },
+        {
+          "name": "city",
+          "type": "string"
+        },
+        {
+          "name": "expiration",
+          "type": "string"
+        },
+        {
+          "name": "cert_type",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "CertificateState",
+      "discriminator": [
+        51,
+        162,
+        176,
+        91,
+        206,
+        185,
+        64,
+        21
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "CertificateState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "cert_id",
+            "type": "string"
+          },
+          {
+            "name": "cid",
+            "type": "string"
+          },
+          {
+            "name": "student_name",
+            "type": "string"
+          },
+          {
+            "name": "course_name",
+            "type": "string"
+          },
+          {
+            "name": "issuing_company",
+            "type": "string"
+          },
+          {
+            "name": "date",
+            "type": "string"
+          },
+          {
+            "name": "hours",
+            "type": "u32"
+          },
+          {
+            "name": "city",
+            "type": "string"
+          },
+          {
+            "name": "expiration",
+            "type": "string"
+          },
+          {
+            "name": "cert_type",
+            "type": "string"
+          }
+        ]
       }
-    ]
-  }
+    }
+  ]
+}

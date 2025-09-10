@@ -15,7 +15,12 @@ export interface CertificateArgs {
   studentName: string
   courseName: string
   date: string
-  issuingCompany: string
+  issuingCompany: string,
+  cid: string,
+  hours: number,
+  city: string,
+  expiration: string,
+  certType: string,
   owner: PublicKey
 }
 
@@ -42,7 +47,19 @@ export function useCertfrontProgram() {
 
   const createCertificate = useMutation<string, Error, CertificateArgs>({
     mutationKey: ['certificate', 'create', { cluster }],
-    mutationFn: async ({ certId, studentName, courseName, date, issuingCompany, owner }) => {
+    mutationFn: async ({ 
+      certId, 
+      studentName, 
+      courseName, 
+      date, 
+      issuingCompany, 
+      cid, 
+      hours, 
+      city, 
+      expiration, 
+      certType, 
+      owner
+     }) => {
       if (!certId || !owner) throw new Error('Faltan certId o owner')
 
       // Calcular PDA del certificado
@@ -52,7 +69,18 @@ export function useCertfrontProgram() {
       )
 
       return program.methods
-        .createCertificate(certId, studentName, courseName, date, issuingCompany)
+        .createCertificate(
+          certId, 
+          studentName, 
+          courseName, 
+          date, 
+          issuingCompany, 
+          cid, 
+          hours, 
+          city, 
+          expiration, 
+          certType
+        )
         .accounts({
           certificate: certificatePDA,
           owner,
@@ -90,7 +118,19 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
 
   const updateCertificate = useMutation<string, Error, CertificateArgs>({
     mutationKey: ['certificate', 'update', { cluster }],
-    mutationFn: async ({ certId,studentName, courseName, date, issuingCompany, owner }) => {
+    mutationFn: async ({ 
+      certId, 
+      studentName, 
+      courseName, 
+      date, 
+      issuingCompany, 
+      cid, 
+      hours, 
+      city, 
+      expiration, 
+      certType, 
+      owner 
+    }) => {
       if (!certId || !owner) throw new Error('Faltan certId u owner')
 
       const [certificatePDA] = PublicKey.findProgramAddressSync(
@@ -98,7 +138,17 @@ export function useCertfrontProgramAccount({ account }: { account: PublicKey }) 
         program.programId,
       )
       return program.methods
-        .updateCertificate(studentName, courseName, date, issuingCompany)
+        .updateCertificate(
+          studentName, 
+          courseName, 
+          date, 
+          issuingCompany, 
+          cid, 
+          hours, 
+          city, 
+          expiration, 
+          certType
+        )
         .accounts({
           certificate: certificatePDA,
           owner,

@@ -22,6 +22,10 @@ export function CertfrontCreate() {
   const [courseName, setCourseName] = useState('')
   const [date, setDate] = useState('')
   const [issuingCompany, setIssuingCompany] = useState('')
+  const [hours, setHours] = useState(0)
+  const [city, setCity] = useState('')
+  const [expiration, setExpiration] = useState('')
+  const [certType, setCertType] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
 
   const isFormValid =
@@ -29,6 +33,10 @@ export function CertfrontCreate() {
     courseName.trim() !== '' &&
     date.trim() !== '' &&
     issuingCompany.trim() !== '' &&
+    hours > 0 &&
+    city.trim() !== '' &&
+    expiration.trim() !== '' &&
+    certType.trim() !== '' &&
     pdfFile !== null
 
   const handleSubmit = async () => {
@@ -40,9 +48,12 @@ export function CertfrontCreate() {
     formData.append('courseName', courseName)
     formData.append('date', date)
     formData.append('issuingCompany', issuingCompany)
+    formData.append('hours', hours.toString())
+    formData.append('city', city)
+    formData.append('expiration', expiration)
+    formData.append('certType', certType)
     formData.append('file', pdfFile as File)
 
-    let certId = ''
     try {
       // 1. Normalizar el nombre del curso
       const normalizedGroupName = courseName.trim().toUpperCase()
@@ -72,6 +83,7 @@ export function CertfrontCreate() {
 
       // 5. Usar CID como certId
       const certId = upload.cid.slice(0, 32)
+      const cid = upload.cid
 
       // 6. Guardar en el smart contract
       await createCertificate.mutateAsync({
@@ -80,6 +92,11 @@ export function CertfrontCreate() {
         courseName: normalizedGroupName,
         date,
         issuingCompany,
+        cid,
+        hours,
+        city,
+        expiration,
+        certType,
         owner: publicKey,
       })
 
@@ -89,6 +106,10 @@ export function CertfrontCreate() {
       setCourseName('')
       setDate('')
       setIssuingCompany('')
+      setHours(0)
+      setCity('')
+      setExpiration('')
+      setCertType('')
       setPdfFile(null)
     } catch (err: any) {
       console.error(err)
@@ -128,6 +149,36 @@ export function CertfrontCreate() {
         onChange={(e) => setIssuingCompany(e.target.value)}
         className="input input-bordered w-full max-w-xs"
       />
+      <input
+        type="number"
+        placeholder="Horas"
+        value={hours}
+        onChange={(e) => setHours(parseInt(e.target.value, 10))}
+        className="input input-bordered w-full max-w-xs"
+      />
+      <input
+        type="text"
+        placeholder="Ciudad"
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+        className="input input-bordered w-full max-w-xs"
+      />
+      <input
+        type="date"
+        placeholder="Fecha de expiración"
+        value={expiration}
+        onChange={(e) => setExpiration(e.target.value)}
+        className="input input-bordered w-full max-w-xs"
+      />
+      <select
+        value={certType}
+        onChange={(e) => setCertType(e.target.value)}
+        className="select select-bordered w-full max-w-xs"
+      >
+        <option value="" disabled>Selecciona tipo de certificado</option>
+        <option value="Asistencia">Asistencia</option>
+        <option value="Aprobación">Aprobación</option>
+      </select>
       <input
         type="file"
         accept=".pdf"
@@ -179,25 +230,45 @@ function CertfrontCard({ account }: { account: PublicKey }) {
   const { accountQuery, updateCertificate, deleteCertificate } = useCertfrontProgramAccount({ account })
   const { publicKey } = useWallet()
 
+  const [showDetails, setShowDetails] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
+
+  // Estados de edición
   const [studentName, setStudentName] = useState('')
   const [courseName, setCourseName] = useState('')
   const [date, setDate] = useState('')
   const [issuingCompany, setIssuingCompany] = useState('')
+  const [hours, setHours] = useState(0)
+  const [city, setCity] = useState('')
+  const [expiration, setExpiration] = useState('')
+  const [certType, setCertType] = useState('')
 
   const isFormValid =
-    studentName.trim() !== '' && courseName.trim() !== '' && date.trim() !== '' && issuingCompany.trim() !== ''
+    studentName.trim() !== '' &&
+    courseName.trim() !== '' &&
+    date.trim() !== '' &&
+    issuingCompany.trim() !== '' &&
+    hours > 0 &&
+    city.trim() !== '' &&
+    expiration.trim() !== '' &&
+    certType.trim() !== ''
 
-  const handleUpdate = () => {
-    if (publicKey && isFormValid) {
-      updateCertificate.mutateAsync({
-        certId: accountQuery.data.certId,
-        studentName,
-        courseName,
-        date,
-        issuingCompany,
-        owner: publicKey,
-      })
-    }
+  const handleUpdate = async () => {
+    if (!publicKey || !isFormValid) return
+    await updateCertificate.mutateAsync({
+      certId: accountQuery.data.certId,
+      studentName,
+      courseName,
+      date,
+      issuingCompany,
+      cid: accountQuery.data.cid,
+      hours,
+      city,
+      expiration,
+      certType,
+      owner: publicKey,
+    })
+    setShowEdit(false) // cerrar modal después de guardar
   }
 
   const handleDelete = () => {
@@ -208,62 +279,23 @@ function CertfrontCard({ account }: { account: PublicKey }) {
   }
 
   if (!publicKey) return <p>Conecta tu billetera</p>
+  if (accountQuery.isLoading) return <span className="loading loading-spinner loading-lg" />
 
-  return accountQuery.isLoading ? (
-    <span className="loading loading-spinner loading-lg" />
-  ) : (
-    <div className="card card-bordered border-4 border-base-300 text-neutral-content">
+  return (
+    <div className="card card-bordered border-4 border-base-300">
       <div className="card-body text-center">
         <h2 className="card-title">{accountQuery.data?.studentName}</h2>
-        <p>Curso: {accountQuery.data?.courseName}</p>
-        <p>Fecha: {accountQuery.data?.date}</p>
-        <p>Empresa: {accountQuery.data?.issuingCompany}</p>
-        <a
-          href={`https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY}/ipfs/${accountQuery.data?.certId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 underline"
-        >
-          Ver certificado
-        </a>
-        <div className="space-y-2">
-          <input
-            type="text"
-            placeholder="Nuevo nombre"
-            value={studentName}
-            onChange={(e) => setStudentName(e.target.value)}
-            className="input input-bordered w-full max-w-xs"
-          />
-          <input
-            type="text"
-            placeholder="Nuevo curso"
-            value={courseName}
-            onChange={(e) => setCourseName(e.target.value)}
-            className="input input-bordered w-full max-w-xs"
-          />
-          <input
-            type="text"
-            placeholder="Nueva fecha"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="input input-bordered w-full max-w-xs"
-          />
-          <input
-            type="text"
-            placeholder="Nueva empresa emisora"
-            value={issuingCompany}
-            onChange={(e) => setIssuingCompany(e.target.value)}
-            className="input input-bordered w-full max-w-xs"
-          />
-          <button
-            className="btn btn-primary"
-            onClick={handleUpdate}
-            disabled={updateCertificate.isPending || !isFormValid}
-          >
-            Actualizar {updateCertificate.isPending && '...'}
+        <p className="text-sm text-gray-500">{accountQuery.data?.courseName}</p>
+
+        <div className="justify-center card-actions mt-4 space-x-2">
+          <button className="btn btn-primary" onClick={() => setShowDetails(true)}>
+            Ver Detalles
+          </button>
+          <button className="btn btn-secondary" onClick={() => setShowEdit(true)}>
+            Editar
           </button>
           <button
-            className="btn btn-secondary btn-outline"
+            className="btn btn-outline btn-error"
             onClick={handleDelete}
             disabled={deleteCertificate.isPending}
           >
@@ -272,6 +304,64 @@ function CertfrontCard({ account }: { account: PublicKey }) {
           <ExplorerLink path={`account/${account}`} label={ellipsify(account.toString())} />
         </div>
       </div>
+
+      {/* MODAL DETALLES */}
+      {showDetails && (
+        <dialog className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Detalles del Certificado</h3>
+            <p><strong>Estudiante:</strong> {accountQuery.data?.studentName}</p>
+            <p><strong>Curso:</strong> {accountQuery.data?.courseName}</p>
+            <p><strong>Fecha:</strong> {accountQuery.data?.date}</p>
+            <p><strong>Empresa:</strong> {accountQuery.data?.issuingCompany}</p>
+            <p><strong>Horas:</strong> {accountQuery.data?.hours}</p>
+            <p><strong>Ciudad:</strong> {accountQuery.data?.city}</p>
+            <p><strong>Expiración:</strong> {accountQuery.data?.expiration}</p>
+            <p><strong>Tipo:</strong> {accountQuery.data?.certType}</p>
+            <a
+              href={`https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY}/ipfs/${accountQuery.data?.cid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link link-primary"
+            >
+              Ver PDF
+            </a>
+
+            <div className="modal-action">
+              <button className="btn" onClick={() => setShowDetails(false)}>Cerrar</button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* MODAL EDITAR */}
+      {showEdit && (
+        <dialog className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Editar Certificado</h3>
+            <div className="space-y-2">
+              <input type="text" placeholder="Estudiante" value={studentName} onChange={(e) => setStudentName(e.target.value)} className="input input-bordered w-full" />
+              <input type="text" placeholder="Curso" value={courseName} onChange={(e) => setCourseName(e.target.value)} className="input input-bordered w-full" />
+              <input type="date" placeholder="Fecha" value={date} onChange={(e) => setDate(e.target.value)} className="input input-bordered w-full" />
+              <input type="text" placeholder="Empresa" value={issuingCompany} onChange={(e) => setIssuingCompany(e.target.value)} className="input input-bordered w-full" />
+              <input type="number" placeholder="Horas" value={hours} onChange={(e) => setHours(parseInt(e.target.value, 10))} className="input input-bordered w-full" />
+              <input type="text" placeholder="Ciudad" value={city} onChange={(e) => setCity(e.target.value)} className="input input-bordered w-full" />
+              <input type="date" placeholder="Expiración" value={expiration} onChange={(e) => setExpiration(e.target.value)} className="input input-bordered w-full" />
+              <select value={certType} onChange={(e) => setCertType(e.target.value)} className="select select-bordered w-full">
+                <option value="" disabled>Selecciona tipo</option>
+                <option value="Asistencia">Asistencia</option>
+                <option value="Aprobación">Aprobación</option>
+              </select>
+            </div>
+            <div className="modal-action">
+              <button className="btn btn-primary" onClick={handleUpdate} disabled={updateCertificate.isPending || !isFormValid}>
+                Guardar {updateCertificate.isPending && '...'}
+              </button>
+              <button className="btn" onClick={() => setShowEdit(false)}>Cancelar</button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   )
 }
