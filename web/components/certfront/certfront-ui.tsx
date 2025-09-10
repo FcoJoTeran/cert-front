@@ -6,7 +6,7 @@ import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
 import { useCertfrontProgram, useCertfrontProgramAccount } from './certfront-data-access'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { PinataSDK } from 'pinata'
 
@@ -28,6 +28,7 @@ export function CertfrontCreate() {
   const [expiration, setExpiration] = useState('')
   const [certType, setCertType] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const isFormValid =
     studentName.trim() !== '' &&
@@ -116,6 +117,9 @@ export function CertfrontCreate() {
       setExpiration('')
       setCertType('')
       setPdfFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     } catch (err: any) {
       console.error(err)
       toast.error('Error al procesar el certificado: ' + err.message)
@@ -204,6 +208,7 @@ export function CertfrontCreate() {
           id="hours"
           type="number"
           placeholder="Horas"
+          min="1"
           value={hours}
           onChange={(e) => setHours(parseInt(e.target.value, 10))}
           className="input input-bordered w-full max-w-xs"
@@ -265,6 +270,7 @@ export function CertfrontCreate() {
           type="file"
           accept=".pdf"
           onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+          ref={fileInputRef}
           className="file-input file-input-bordered w-full max-w-xs"
         />
       </div>
@@ -378,7 +384,9 @@ function CertfrontCard({ account }: { account: PublicKey }) {
     <div className="card card-bordered border-4 border-base-300">
       <div className="card-body text-center">
         <h2 className="card-title">{accountQuery.data?.courseName}</h2>
-        <p className="text-sm text-gray-500">{accountQuery.data?.studentName} {accountQuery.data?.studentLastName}</p>
+        <p className="text-sm text-gray-500">
+          {accountQuery.data?.studentName} {accountQuery.data?.studentLastName}
+        </p>
         <a
           href={`https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY}/ipfs/${accountQuery.data?.cid}`}
           target="_blank"
@@ -536,6 +544,7 @@ function CertfrontCard({ account }: { account: PublicKey }) {
                   id="hours"
                   type="number"
                   placeholder="Horas"
+                  min="1"
                   value={hours}
                   onChange={(e) => setHours(parseInt(e.target.value, 10))}
                   className="input input-bordered w-full"
